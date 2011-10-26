@@ -1,6 +1,6 @@
 {-# OPTIONS_HADDOCK hide #-}
 
-module Codec.Binary.QRCode.FormatInfo where
+module Codec.Binary.QRCode.FormatInfo (encode) where
 
 import Codec.Binary.QRCode.Spec
 import Codec.Binary.QRCode.Utils
@@ -13,6 +13,6 @@ encode :: ErrorLevel -> BitStream -> BitStream
 encode ec maskPatRef = showBinPadded 15 $ encoded `xor` qrFormatInfoMask
     where
         ecIndicator = qrErrorLevelIndicators ec
-        input = ecIndicator ++ maskPatRef
-        inputPoly = gfpRightPad 10 $ toPoly input
-        encoded = gfpToBinaryRepr $ gfpAdd inputPoly (snd $ gfpQuotRem inputPoly qrFormatInfoGenPoly)
+        input       = ecIndicator ++ maskPatRef
+        inputPoly   = gfpRightPad 10 $ toPoly input
+        encoded     = gfpToBinaryRepr $ gfpAdd inputPoly (snd $ gfpQuotRem inputPoly qrFormatInfoGenPoly)
