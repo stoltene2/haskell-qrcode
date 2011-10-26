@@ -1,6 +1,7 @@
 {-# OPTIONS_HADDOCK hide #-}
 
-module Codec.Binary.QRCode.Blocks where
+module Codec.Binary.QRCode.Blocks 
+    (interleave) where
 
 import Codec.Binary.QRCode.Utils
 import Codec.Binary.QRCode.Spec
@@ -10,9 +11,6 @@ import Control.Monad
 
 type Codewords = [BitStream]
 
-mkPolyForEncode :: Version -> ErrorLevel -> BitStream -> GFPolynomial
-mkPolyForEncode (Version v) errLevel bitstream = gfpRightPad numErrorWords $ mkPolynomial $ map readBin $ chunksOf 8 bitstream
-    where numErrorWords = qrNumErrorCodewordsPerBlock v errLevel
 
 interleave :: Version -> ErrorLevel -> BitStream -> BitStream
 interleave ver@(Version v) ecl rawCoded = result'
@@ -34,15 +32,24 @@ interleave ver@(Version v) ecl rawCoded = result'
         result = concat $ concat (transpose dataCodewords) ++ concat (transpose ecCodewords)
         result' = padRemainderBits result
 
+
+
+mkPolyForEncode :: Version -> ErrorLevel -> BitStream -> GFPolynomial
+mkPolyForEncode (Version v) errLevel bitstream = gfpRightPad numErrorWords $ mkPolynomial $ map readBin $ chunksOf 8 bitstream
+    where numErrorWords = qrNumErrorCodewordsPerBlock v errLevel
+
+
 pad :: MonadPlus m => [[m a]] -> [[m a]]
 pad xs = map go xs
     where
         go l = take len $ l ++ repeat mzero
         len = maximum . map length $ xs
 
+
 transpose :: [[a]] -> [[a]]
 transpose xs = foldl1 (zipWith mplus) xs'
     where xs' = pad $ map (map (:[])) xs
+
 
 chunks :: [a] -> [Int] -> [[a]]
 chunks = go []
@@ -50,8 +57,10 @@ chunks = go []
         go acc xs (n:ns) = go (take n xs : acc) (drop n xs) ns
         go acc _ [] = reverse acc
 
+
 toCodewords :: BitStream -> Codewords
 toCodewords = chunksOf 8
+
 
 genCodewords :: Version -> ErrorLevel -> BitStream -> (Codewords, Codewords)
 genCodewords ver@(Version v) ecl input = (toCodewords dataCodewords, toCodewords errorCodewords)
@@ -64,6 +73,7 @@ genCodewords ver@(Version v) ecl input = (toCodewords dataCodewords, toCodewords
         poly = toECPoly ver ecl $ dataCodewords
         errorCodewords = gfpShowBin $ snd $ gfpQuotRem poly genPoly
 
+
 mkDataCodewords :: Version -> ErrorLevel -> BitStream -> BitStream
 mkDataCodewords (Version v) errLevel = fillPadCodewords . padBits . terminate
     where
@@ -72,6 +82,7 @@ mkDataCodewords (Version v) errLevel = fillPadCodewords . padBits . terminate
         padBits i' = i' ++ take padLength "0000000"
             where padLength = 8 - (length i' `rem` 8)
         fillPadCodewords i' = take numDataBits (i' ++ (cycle "1110110000010001"))
+
 
 toECPoly :: Version -> ErrorLevel -> BitStream -> GFPolynomial
 toECPoly (Version v) errLevel bitstream = gfpRightPad numErrorWords $ mkPolynomial $ map readBin $ chunksOf 8 bitstream

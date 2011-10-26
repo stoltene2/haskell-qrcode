@@ -36,7 +36,7 @@ import Codec.Binary.QRCode.Utils
 import Codec.Binary.QRCode.Spec
 import Codec.Binary.QRCode.Placement
 import Codec.Binary.QRCode.Masks
-import Codec.Binary.QRCode.Blocks
+import Codec.Binary.QRCode.Blocks (interleave)
 import Codec.Binary.QRCode.Matrix
 
 import qualified Codec.Binary.QRCode.Modes.Numeric as N
