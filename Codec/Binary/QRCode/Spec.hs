@@ -3,7 +3,7 @@ module Codec.Binary.QRCode.Spec where
 
 import Data.Maybe
 
-import Codec.Binary.QRCode.GaloisField
+import Codec.Binary.QRCode.GaloisField (GFPolynomial, mkPolynomial, readBin, gfALog)
 
 data Mode = Numeric -- ^ @0123456789@
 
@@ -15,12 +15,18 @@ data Mode = Numeric -- ^ @0123456789@
           | Kanji
           deriving (Show, Eq)
 
-newtype Version = Version Int deriving (Show, Eq)
+
+newtype Version = Version Int 
+    deriving (Show, Eq)
+
+
 data ErrorLevel = L -- ^ Error recovery up to 7%.
                 | M -- ^ Error recovery up to 15%.
                 | Q -- ^ Error recovery up to 25%.
                 | H -- ^ Error recovery up to 30%.
                 deriving (Show, Eq)
+
+
 data Info = Info
     { qrVersion :: Int
     , qrNumModulesPerSide :: Int
@@ -31,23 +37,29 @@ data Info = Info
     , qrRemainderBits :: Int
     } deriving (Eq, Show)
 
+
 qrGetWidth :: Version -> Int
 qrGetWidth = qrNumModulesPerSide . qrGetInfo
+
 
 qrFormatInfoMask :: Int
 qrFormatInfoMask = readBin "101010000010010"
 
+
 qrFormatInfoGenPoly :: GFPolynomial
 qrFormatInfoGenPoly = mkPolynomial [1,0,1,0,0,1,1,0,1,1,1]
 
+
 qrVersionInfoGenPoly :: GFPolynomial
 qrVersionInfoGenPoly = mkPolynomial [1,1,1,1,1,0,0,1,0,0,1,0,1]
+
 
 qrErrorLevelIndicators :: ErrorLevel -> String
 qrErrorLevelIndicators L = "01"
 qrErrorLevelIndicators M = "00"
 qrErrorLevelIndicators Q = "11"
 qrErrorLevelIndicators H = "10"
+
 
 qrAlignmentCenters :: Version -> [Int]
 qrAlignmentCenters = fromJust . flip lookup table
@@ -141,8 +153,10 @@ qrGetInfo = fromJust . flip lookup table
             , ( Version 40, Info 40 177 1614 67 29648 3706 0 )
             ]
 
+
 mkVersion :: Int -> Version
 mkVersion = Version
+
 
 qrLengthsOfCCI :: [(Mode, Int)]
 qrLengthsOfCCI = zip (cycle [Numeric,Alphanumeric,EightBit,Kanji]) table
@@ -153,6 +167,7 @@ qrLengthsOfCCI = zip (cycle [Numeric,Alphanumeric,EightBit,Kanji]) table
             , 14, 13, 16, 12 -- version 1 to 9
             ]
 
+
 qrLengthOfCCI :: Version -> Mode -> Int
 qrLengthOfCCI (Version ver) mode
     | ver >= 1 && ver <= 9 = go 0
@@ -161,6 +176,7 @@ qrLengthOfCCI (Version ver) mode
     | otherwise = error $ "Invalid Version " ++ show ver
     where go n = fromJust $ lookup mode (drop (n*4) qrLengthsOfCCI)
 
+
 qrMatchTable :: Int -> ErrorLevel -> [a] -> a
 qrMatchTable ver err table = table !! ((ver-1) * 4 + m2i err)
     where
@@ -168,6 +184,7 @@ qrMatchTable ver err table = table !! ((ver-1) * 4 + m2i err)
         m2i M = 1
         m2i Q = 2
         m2i H = 3
+
 
 qrDCWSizes :: Num a => Int -> ErrorLevel -> [a]
 qrDCWSizes ver err = qrMatchTable ver err table
@@ -261,6 +278,7 @@ qrNumErrorCodewordsPerBlock ver err = qrMatchTable ver err table
             , 30, 28, 30, 30
             ]
 
+
 qrNumDataBits :: Num a => Int -> ErrorLevel -> a
 qrNumDataBits ver mode = qrMatchTable ver mode table
     where table = 
@@ -306,8 +324,10 @@ qrNumDataBits ver mode = qrMatchTable ver mode table
             , 23648, 18672, 13328, 10208
             ]
 
+
 qrGenPoly :: Int -> [Int]
 qrGenPoly = map gfALog . qrGenPolyRaw
+
 
 -- Decreasing degree of x
 qrGenPolyRaw :: Int -> [Int]
