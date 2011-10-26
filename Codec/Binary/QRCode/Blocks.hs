@@ -33,10 +33,9 @@ interleave ver@(Version v) ecl rawCoded = result'
         result' = padRemainderBits result
 
 
-
-mkPolyForEncode :: Version -> ErrorLevel -> BitStream -> GFPolynomial
-mkPolyForEncode (Version v) errLevel bitstream = gfpRightPad numErrorWords $ mkPolynomial $ map readBin $ chunksOf 8 bitstream
-    where numErrorWords = qrNumErrorCodewordsPerBlock v errLevel
+transpose :: [[a]] -> [[a]]
+transpose xs = foldl1 (zipWith mplus) xs'
+    where xs' = pad $ map (map (:[])) xs
 
 
 pad :: MonadPlus m => [[m a]] -> [[m a]]
@@ -46,11 +45,6 @@ pad xs = map go xs
         len = maximum . map length $ xs
 
 
-transpose :: [[a]] -> [[a]]
-transpose xs = foldl1 (zipWith mplus) xs'
-    where xs' = pad $ map (map (:[])) xs
-
-
 chunks :: [a] -> [Int] -> [[a]]
 chunks = go []
     where
@@ -58,13 +52,12 @@ chunks = go []
         go acc _ [] = reverse acc
 
 
-toCodewords :: BitStream -> Codewords
-toCodewords = chunksOf 8
-
-
 genCodewords :: Version -> ErrorLevel -> BitStream -> (Codewords, Codewords)
 genCodewords ver@(Version v) ecl input = (toCodewords dataCodewords, toCodewords errorCodewords)
     where
+        toCodewords :: BitStream -> Codewords
+        toCodewords = chunksOf 8
+
         dataCodewords = input
 
         numErrorWords = qrNumErrorCodewordsPerBlock v ecl
