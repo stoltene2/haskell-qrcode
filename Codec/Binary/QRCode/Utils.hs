@@ -5,7 +5,7 @@ import Numeric
 import Data.Char
 
 import Codec.Binary.QRCode.Spec
-import Codec.Binary.QRCode.GaloisField
+import Codec.Binary.QRCode.GaloisField (GFPolynomial, mkPolynomial)
 
 import Control.Monad.Reader
 
