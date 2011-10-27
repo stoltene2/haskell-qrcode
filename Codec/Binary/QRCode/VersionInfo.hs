@@ -1,5 +1,5 @@
 {-# OPTIONS_HADDOCK hide #-}
-module Codec.Binary.QRCode.VersionInfo where
+module Codec.Binary.QRCode.VersionInfo (encode) where
 
 import Codec.Binary.QRCode.Spec
 import Codec.Binary.QRCode.Utils
