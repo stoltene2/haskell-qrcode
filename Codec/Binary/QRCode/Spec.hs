@@ -186,8 +186,8 @@ qrMatchTable ver err table = table !! ((ver-1) * 4 + m2i err)
         m2i H = 3
 
 
-qrDCWSizes :: Num a => Int -> ErrorLevel -> [a]
-qrDCWSizes ver err = qrMatchTable ver err table
+qrDataCodeWordSizes :: Num a => Int -> ErrorLevel -> [a]
+qrDataCodeWordSizes ver err = qrMatchTable ver err table
     where
         table =
             [ [19], [16], [13], [9] -- 1L, 1M, 1Q, 1H

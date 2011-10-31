@@ -6,17 +6,22 @@ import Codec.Binary.QRCode.Spec
 
 import Data.Char
 
+
 chars :: [Char]
 chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-.:"
+
 
 table :: [(Char, Int)]
 table = zip chars [0..44]
 
+
 convert :: Char -> Maybe Int
 convert = flip lookup table
 
+
 toCharValues :: Input -> Maybe [Int]
 toCharValues = sequence . map convert
+
 
 encode :: Version -> Input -> Maybe BitStream
 encode ver input = ((modeIndicatorBits ++ characterCountBits) ++) `fmap` dataBits

@@ -82,7 +82,7 @@ instance Num GFElement where
 
 gfShowBin :: GFElement -> String
 gfShowBin (GFElement n) = replicate padLength '0' ++ str
-    where str = showIntAtBase 2 intToDigit n ""
+    where str = showIntAtBase 2 intToDigit n ""  
           padLength = 8 - length str
 
 gfQuotRem :: GFElement -> GFElement -> (GFElement, GFElement)

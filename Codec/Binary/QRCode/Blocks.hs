@@ -16,7 +16,7 @@ interleave :: Version -> ErrorLevel -> BitStream -> BitStream
 interleave ver@(Version v) ecl rawCoded = result'
     where
         blocks :: [[BitStream]]
-        blocks = chunks (chunksOf 8 $ mkDataCodewords ver ecl rawCoded) (qrDCWSizes v ecl)
+        blocks = chunks (chunksOf 8 $ mkDataCodewords ver ecl rawCoded) (qrDataCodeWordSizes v ecl)
 
         codewordPairs = map (genCodewords ver ecl . concat) blocks
 
@@ -53,12 +53,10 @@ chunks = go []
 
 
 genCodewords :: Version -> ErrorLevel -> BitStream -> (Codewords, Codewords)
-genCodewords ver@(Version v) ecl input = (toCodewords dataCodewords, toCodewords errorCodewords)
+genCodewords ver@(Version v) ecl dataCodewords = (toCodewords dataCodewords, toCodewords errorCodewords)
     where
         toCodewords :: BitStream -> Codewords
         toCodewords = chunksOf 8
-
-        dataCodewords = input
 
         numErrorWords = qrNumErrorCodewordsPerBlock v ecl
         genPoly = mkPolynomial $ qrGenPoly numErrorWords
@@ -66,6 +64,14 @@ genCodewords ver@(Version v) ecl input = (toCodewords dataCodewords, toCodewords
         poly = toECPoly ver ecl $ dataCodewords
         errorCodewords = gfpShowBin $ snd $ gfpQuotRem poly genPoly
 
+
+------------------------------------------------------------------------------
+-- | Creates the codewords from a BitStream
+--
+-- This function creates the Data Codeword bitstream according to the
+-- following rules:
+
+-- 1. 
 
 mkDataCodewords :: Version -> ErrorLevel -> BitStream -> BitStream
 mkDataCodewords (Version v) errLevel = fillPadCodewords . padBits . terminate
